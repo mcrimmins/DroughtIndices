@@ -4,6 +4,7 @@
 library(sp)
 library(rgdal)
 
+
 # get filenames 
 shps <- dir("/home/crimmins/RProjects/USDM/regions/AllRegions", "*.shp", full.names = TRUE)
 shps<-shps[-grep(".xml", shps)]
@@ -31,6 +32,26 @@ spi<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPI6_1915_2015.
 allRegionsGrid <- rasterize(allRegionsLL, spi[[1212]], 'FORM_LAB', fun='last')
 writeRaster(allRegionsGrid,filename="/home/crimmins/RProjects/LivnehDrought/shapes/allRegionsLLgrid.grd", overwrite=TRUE )
 
+# load and map grid
+library(rasterVis)
+states <- getData('GADM', country='United States', level=1)
+allRegionsGrid<-raster("/home/crimmins/RProjects/LivnehDrought/shapes/allRegionsLLgrid.grd")
+# random colors -- https://stackoverflow.com/questions/15282580/how-to-generate-a-number-of-most-distinctive-colors-in-r
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+darkcols<-sample(col_vector, 12)
+classMap<-as.factor(allRegionsGrid)
+rat <- levels(classMap)[[1]]
+# cluster names
+rat[["Name"]]<-c("CALIFORNIA GRASSLAND","CALIFORNIA MIXED EVERGREEN","DESERT GRASSLAND","DESERT SHRUB",
+               "DESERT STEPPE","GREAT BASIN GRASSLAND","GREAT BASIN SHRUB","GREAT BASIN SHRUB/STEPPE",
+               "GREAT BASIN/SOUTHWEST FOREST", "NORTH MIXED GRASS PRAIRIE","SHORTGRASS PRAIRIE",
+               "SOUTH MIXED GRASS PRARIE")
+levels(classMap) <- rat 
+# plot classified map
+levelplot(classMap, col.regions=darkcols, par.settings=list(panel.background=list(col="white")),
+          margin=FALSE, main="Kuchler Life Forms")+
+  layer(sp.polygons(states))
 
 #levelplot(prec[[1212]], par.settings = GrTheme, at=my.at, margin=FALSE, main="SPI", colorkey = list(space='right'))+
 #  layer(sp.polygons(allRegionsLL))

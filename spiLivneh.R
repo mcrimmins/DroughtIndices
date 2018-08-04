@@ -45,11 +45,13 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   # wtrBal<-prec-harg
   # writeRaster(wtrBal,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreavesWaterBal_1915_2015.grd", overwrite=TRUE )
 # reload harg if necessary
+  # set names
+  dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   wtrBal<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreavesWaterBal_1915_2015.grd")  
     wtrBal<- setZ(wtrBal,dates)
     names(wtrBal) <- as.yearmon(getZ(wtrBal))
 
-  funSPEI <- function(x, scale=3, na.rm=TRUE,...) as.numeric((spei(x, scale=scale, na.rm=na.rm, ...))$fitted)
+  funSPEI <- function(x, scale=6, na.rm=TRUE,...) as.numeric((spei(x, scale=scale, na.rm=na.rm, ...))$fitted)
   #rstSPEI <- calc(wtrBal, fun = funSPEI)
   # parallell calc
   ptm <- proc.time()
@@ -67,11 +69,11 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   sdSPEI<-calc(speiTemp, sd)
 
 # write out files
-  writeRaster(spiTemp,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI3_1915_2015.grd", overwrite=TRUE )
+  writeRaster(speiTemp,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI6_1915_2015.grd", overwrite=TRUE )
   
   
 # calculate SPI
-  funSPI <- function(x, scale=6, na.rm=TRUE,...) as.numeric((spi(x, scale=scale, na.rm=na.rm, ...))$fitted)
+  funSPI <- function(x, scale=12, na.rm=TRUE,...) as.numeric((spi(x, scale=scale, na.rm=na.rm, ...))$fitted)
   #rstSPEI <- calc(wtrBal, fun = funSPEI)
   # parallell calc
   ptm <- proc.time()
@@ -89,6 +91,6 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   # sdSPI<-calc(spiTemp, sd, na.rm=TRUE) 
   
   # write out files
-  writeRaster(spiTemp,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPI6_1915_2015.grd", overwrite=TRUE )
+  writeRaster(spiTemp,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPI12_1915_2015.grd", overwrite=TRUE )
   
   
