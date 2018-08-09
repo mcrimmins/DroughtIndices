@@ -13,18 +13,19 @@ states <- getData('GADM', country='United States', level=1)
 
 # load data
 prec<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_prec_1915_2015.grd")
-tmin<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_tmin_1915_2015.grd")
-tmax<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_tmax_1915_2015.grd")
+#tmin<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_tmin_1915_2015.grd")
+#tmax<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_tmax_1915_2015.grd")
+tave<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_tave_1915_2015.grd")
 
 # set names
 dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
 # set dates to grids
-  prec<- setZ(prec,dates)
-  names(prec) <- as.yearmon(getZ(prec))
-  tmin<- setZ(tmin,dates)
-  names(tmin) <- as.yearmon(getZ(tmin))
-  tmax<- setZ(tmax,dates)
-  names(tmax) <- as.yearmon(getZ(tmax))
+  # prec<- setZ(prec,dates)
+  # names(prec) <- as.yearmon(getZ(prec))
+  # tmin<- setZ(tmin,dates)
+  # names(tmin) <- as.yearmon(getZ(tmin))
+  # tmax<- setZ(tmax,dates)
+  # names(tmax) <- as.yearmon(getZ(tmax))
 
 # calculate monthly hargreaves
   # har <- function(Tmin, Tmax, lat) {
@@ -39,6 +40,47 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   # harg<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreaves_1915_2015.grd")
   # harg<- setZ(harg,dates)
   # names(harg) <- as.yearmon(getZ(harg))
+  
+# # calculate monthly thornthwaite
+#   tw <- function(Tave, lat) {
+#     SPEI::thornthwaite(Tave, lat, na.rm=TRUE)
+#   }
+# 
+#   a <- raster(tave)
+#   lat <- init(a, "y")
+#   thorn <- raster::overlay(tave, lat, fun = Vectorize(tw)) # add filename
+  
+  # VECTORIZED thornthwaite ET ->
+  # https://stackoverflow.com/questions/50452135/thornthwaite-evapotranspiration-on-a-raster-dataset-error-formula-not-vectoris
+  th <- function(Tave, lat) {
+    as.vector(SPEI::thornthwaite(as.vector(Tave), lat, na.rm=TRUE))
+  } 
+  a <- raster(tave)
+  lat <- init(a, "y")
+  out <- brick(tave, values=FALSE)
+# for (i in 1:ncell(tave)) {
+#    out[i] <- th(tave[i], lat[i])
+#  }
+  
+  # use parallel 
+  library(parallel)
+  f2<-function(i){return(th(tave[i], lat[i]))}
+ # cores <- detectCores() - 1
+#  cl <- makeCluster(7, type='FORK')
+#    out<-mclapply(1:ncell(tave), f2, mc.cores=7)
+#  stopCluster(cl)
+  library(pbmcapply)
+  cl <- makeCluster(7, type='FORK')
+    out<-pbmclapply(1:ncell(tave), f2, mc.cores=7)
+  stopCluster(cl)
+  
+  
+  writeRaster(harg,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_thornthwaite_1915_2015.grd", overwrite=TRUE )
+  # reload harg if necessary
+  harg<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreaves_1915_2015.grd")
+  harg<- setZ(harg,dates)
+  names(harg) <- as.yearmon(getZ(harg))
+  
   
 # calculate SPEI 
 # https://gis.stackexchange.com/questions/277344/using-spei-function-on-time-series-from-rasterstack-in-r
