@@ -93,7 +93,7 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
     wtrBal<- setZ(wtrBal,dates)
     names(wtrBal) <- as.yearmon(getZ(wtrBal))
 
-  funSPEI <- function(x, scale=6, na.rm=TRUE,...) as.numeric((spei(x, scale=scale, na.rm=na.rm, ...))$fitted)
+  funSPEI <- function(x, scale=12, na.rm=TRUE,...) as.numeric((spei(x, scale=scale, na.rm=na.rm, ...))$fitted)
   #rstSPEI <- calc(wtrBal, fun = funSPEI)
   # parallell calc
   ptm <- proc.time()
@@ -111,7 +111,7 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   sdSPEI<-calc(speiTemp, sd)
 
 # write out files
-  writeRaster(speiTemp,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI6_1915_2015.grd", overwrite=TRUE )
+  writeRaster(speiTemp,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI12_1915_2015.grd", overwrite=TRUE )
   
   
 # calculate SPI
