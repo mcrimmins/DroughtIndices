@@ -1,0 +1,24 @@
+---
+title: "Range Resilience Site Profile"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Basic Climate Information for Mohave County
+
+This is a prototype Climate Profile. 
+
+```{r fig.width=8, fig.height=8,echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("plot2by2.png")
+ grid.raster(img)
+```
+
+******
+Data Citation: Livneh B., E.A. Rosenberg, C. Lin, B. Nijssen, V. Mishra, K.M. Andreadis, E.P. Maurer, and D.P. Lettenmaier, 2013: A Long-Term Hydrologically Based Dataset of Land Surface Fluxes and States for the Conterminous United States: Update and Extensions, Journal of Climate, 26, 9384–9392.
+
+

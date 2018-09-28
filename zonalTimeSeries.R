@@ -62,13 +62,15 @@ ggplot(spiTSsdLong, aes(x=date, y=value))+
 
 # add error ribbon to SPI plots
 spiTSzonalSD<-as.data.frame(t(zonal(spi, allRegionsLLGrid, 'sd')))
-colnames(spiTSzonalSD)<-c("CALIFORNIA GRASSLAND","CALIFORNIA MIXED EVERGREEN","DESERT GRASSLAND","DESERT SHRUB",
-                   "DESERT STEPPE","GREAT BASIN GRASSLAND","GREAT BASIN SHRUB","GREAT BASIN SHRUB/STEPPE",
-                   "GREAT BASIN/SOUTHWEST FOREST", "NORTH MIXED GRASS PRAIRIE","SHORTGRASS PRAIRIE",
-                   "SOUTH MIXED GRASS PRARIE") 
+#colnames(spiTSzonalSD)<-c("CALIFORNIA GRASSLAND","CALIFORNIA MIXED EVERGREEN","DESERT GRASSLAND","DESERT SHRUB",
+#                   "DESERT STEPPE","GREAT BASIN GRASSLAND","GREAT BASIN SHRUB","GREAT BASIN SHRUB/STEPPE",
+#                   "GREAT BASIN/SOUTHWEST FOREST", "NORTH MIXED GRASS PRAIRIE","SHORTGRASS PRAIRIE",
+#                   "SOUTH MIXED GRASS PRARIE") 
+colnames(spiTSzonalSD)<-regionName
 spiTSzonalSD <- spiTSzonalSD[-c(1), ]
 spiTSzonalSD$date<-seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
-spiTSLongSD<-melt(spiTSzonalSD,measure.vars = 1:12)
+spiTSzonalSD<- spiTSzonalSD[which(month(spiTSzonalSD$date)==10),]
+spiTSLongSD<-melt(spiTSzonalSD,measure.vars = 1:8)
 # get sdev intervals
 spiTSLong$sdevPos<-spiTSLong$value+spiTSLongSD$value
 spiTSLong$sdevNeg<-spiTSLong$value-spiTSLongSD$value
@@ -85,5 +87,5 @@ ggplot(spiTSLong, aes(x=date,y=value))+
   geom_line(color="red", size=0.1)+
   geom_ribbon(aes(ymax = sdevPos, ymin = sdevNeg,linetype=NA), alpha = 0.3)+
   facet_wrap(~ variable, ncol = 4, nrow = 3, strip.position="top")+
-  labs(x='month/year',y='SPI', title="SPI-6")+
+  labs(x='month/year',y='SPI', title="Standardized Precip Index - October 6 month")+
   theme_bw()
