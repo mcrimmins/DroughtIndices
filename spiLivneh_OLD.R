@@ -84,11 +84,8 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
   
 # calculate SPEI 
 # https://gis.stackexchange.com/questions/277344/using-spei-function-on-time-series-from-rasterstack-in-r
-  # load data
-  #prec<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_prec_1915_2015.grd")
-  #harg<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreaves_1915_2015.grd")
-  #wtrBal<-prec-harg
-  #writeRaster(wtrBal,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreavesWaterBal_1915_2015.grd", overwrite=TRUE )
+  # wtrBal<-prec-harg
+  # writeRaster(wtrBal,filename="/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_hargreavesWaterBal_1915_2015.grd", overwrite=TRUE )
 # reload harg if necessary
   # set names
   dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
@@ -107,7 +104,7 @@ dates=seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
 # plot grids
   my.at <- seq(-3, 3, 0.5)
   #mapTheme <- rasterTheme(region=brewer.pal(11,"Spectral"))
-  levelplot(speiTemp[[1212]], par.settings = RdBuTheme, at=my.at, margin=FALSE, main="SPEI")+
+  levelplot(speiTemp[[1]], par.settings = RdBuTheme, at=my.at, margin=FALSE, main="SPEI")+
     layer(sp.polygons(states))
 # check stats of dist fitting
   meanSPEI<-calc(speiTemp, mean)

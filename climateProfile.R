@@ -7,6 +7,8 @@
 # - add local elevation ranges, area? 
 # - table of extreme warm/cold, dry/wet years? annotate on plots
 # - USDM figure for county
+# - add dataset grids to map
+# - create station based profile, best station in county?
 
 library(raster)
 library(dplyr)
