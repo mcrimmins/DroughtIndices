@@ -10,6 +10,8 @@
 # - add dataset grids to map
 # - create station based profile, best station in county?
 
+# LOGAN CO creates probs, set CO and city of Sterling to get map straight, Fort Morgan for Morgan CO
+
 library(raster)
 library(dplyr)
 library(ggplot2)
@@ -18,20 +20,23 @@ library(ggmap)
 library(scales)
 library(cowplot)
 
+
 # set rasteroptions
 rasterOptions(progress = 'text')
 # ggmap key
 source('~/RProjects/RainlogAPI/APIkey.R')
 
 # labels 
-countyName<-"Mohave"
+countyName<-"Cochise"
 
 # get boundary
 us<-getData('GADM', country='USA', level=2)
 county<-subset(us,NAME_2==countyName)
+#county<-subset(us,NAME_2==countyName & NAME_1=="Utah")
 
 # get ggmap
 where<-geocode(paste0(countyName," County"), source = "dsk")
+#where<-geocode(paste0("Fort Morgan, CO"), source = "dsk")
 map <- qmap(location = c(lon = where[1,1], lat = where[1,2]), zoom = 7,
                   color = "color")
 
@@ -51,6 +56,12 @@ tmax<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_tmax_1915_2015
 # drought indices
 spi3<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPI3_1915_2015.grd")
 spi12<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPI12_1915_2015.grd")
+# hargreaves
+spei3<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI3harg_1915_2015.grd")
+spei12<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI12harg_1915_2015.grd")
+# thornthwaite
+#spei3<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI3thorn_1915_2015.grd")
+#spei12<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPEI12thorn_1915_2015.grd")
 
 # extract time series
 #pptMean <- t(extract(prec, county, fun=mean, df=TRUE, weights=TRUE, normalizeWeights=TRUE))
@@ -60,18 +71,25 @@ tminMonthly <- t(extract(tmin, county, fun=mean, df=TRUE, na.rm=TRUE))
 tmaxMonthly <- t(extract(tmax, county, fun=mean, df=TRUE, na.rm=TRUE))
 spi3Monthly <- t(extract(spi3, county, fun=mean, df=TRUE, na.rm=TRUE))
 spi12Monthly <- t(extract(spi12, county, fun=mean, df=TRUE, na.rm=TRUE))
+spei3Monthly <- t(extract(spei3, county, fun=mean, df=TRUE, na.rm=TRUE))
+spei12Monthly <- t(extract(spei12, county, fun=mean, df=TRUE, na.rm=TRUE))
+
 
 # create dataframe
-monthlyClimate<-as.data.frame(cbind(tmaxMonthly,tminMonthly,tmeanMonthly,precMonthly, spi3Monthly, spi12Monthly))
+monthlyClimate<-as.data.frame(cbind(tmaxMonthly,tminMonthly,tmeanMonthly,precMonthly, spi3Monthly, spi12Monthly,spei3Monthly, spei12Monthly))
   monthlyClimate <- monthlyClimate[-1, ]
 monthlyClimate$dates<-seq(as.Date("1915-01-01"), as.Date("2015-12-31"), by="month")
-names(monthlyClimate)<-c("tmax","tmin","tave","prec","spi3","spi12","dates")
+names(monthlyClimate)<-c("tmax","tmin","tave","prec","spi3","spi12","spei3","spei12","dates")
 monthlyClimate$year<-as.numeric(format(monthlyClimate$dates, "%Y"))
 monthlyClimate$month<-as.numeric(format(monthlyClimate$dates, "%m"))
 monthlyClimate$precTotal<-monthlyClimate$prec*days_in_month(monthlyClimate$dates)
 
 # Walter-Lieth Diagrams
 # see https://www.benjaminbell.co.uk/2018/04/walter-and-lieth-climate-diagrams-in-r.html
+
+# Dismo Biovars by year
+
+
 
 # get monthly summary stats
 yrs<-max(monthlyClimate$year)-min(monthlyClimate$year)+1
@@ -129,6 +147,15 @@ precPlot<-ggplot(annualClimate, aes(x=year, y=meanPrec))+
 # SPI plots
 monthlyClimate$spi3col<-monthlyClimate$spi3 >=0
 monthlyClimate$spi12col<-monthlyClimate$spi12 >=0
+monthlyClimate$spei3col<-monthlyClimate$spei3 >=0
+monthlyClimate$spei12col<-monthlyClimate$spei12 >=0
+
+# set date range
+startYear<-1995
+endYear<-2015
+startDate<-paste0(startYear,"-01-01")
+endDate<-paste0(endYear,"-12-01")
+
 # SPI3
 spi3plot<-ggplot(monthlyClimate, aes(x=dates,y=spi3, fill=spi3col))+
   geom_bar(stat = "identity", position = "identity")+
@@ -136,9 +163,10 @@ spi3plot<-ggplot(monthlyClimate, aes(x=dates,y=spi3, fill=spi3col))+
   labs(x='month/year',y='SPI', title='Standardized Precipitation Index - 3 month')+
   scale_x_date(date_breaks = "1 year", 
                labels=date_format("%Y"),
-               limits = as.Date(c('1995-01-01','2015-01-01')), expand = c(0.01, 0))+
+               limits = as.Date(c(startDate,endDate)), expand = c(0.01, 0))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(limits=c(-2.5,2.5),oob = rescale_none)
 # SPI12
 spi12plot<-ggplot(monthlyClimate, aes(x=dates,y=spi12, fill=spi12col))+
   geom_bar(stat = "identity", position = "identity")+
@@ -146,23 +174,56 @@ spi12plot<-ggplot(monthlyClimate, aes(x=dates,y=spi12, fill=spi12col))+
   labs(x='month/year',y='SPI', title='Standardized Precipitation Index - 12 month')+
   scale_x_date(date_breaks = "1 year", 
                labels=date_format("%Y"),
-               limits = as.Date(c('1995-01-01','2015-01-01')), expand = c(0.01, 0))+
+               limits = as.Date(c(startDate,endDate)), expand = c(0.01, 0))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(limits=c(-2.5,2.5),oob = rescale_none)
+
+# SPEI3
+spei3plot<-ggplot(monthlyClimate, aes(x=dates,y=spei3, fill=spei3col))+
+  geom_bar(stat = "identity", position = "identity")+
+  scale_fill_manual(values = c("#8c510a","#01665e"), guide=FALSE)+
+  labs(x='month/year',y='SPEI', title='Standardized Precipitation ET Index - 3 month')+
+  scale_x_date(date_breaks = "1 year", 
+               labels=date_format("%Y"),
+               limits = as.Date(c(startDate,endDate)), expand = c(0.01, 0))+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(limits=c(-2.5,2.5),oob = rescale_none)
+# SPEI12
+spei12plot<-ggplot(monthlyClimate, aes(x=dates,y=spei12, fill=spei12col))+
+  geom_bar(stat = "identity", position = "identity")+
+  scale_fill_manual(values = c("#8c510a","#01665e"), guide=FALSE)+
+  labs(x='month/year',y='SPEI', title='Standardized Precipitation ET Index - 12 month')+
+  scale_x_date(date_breaks = "1 year", 
+               labels=date_format("%Y"),
+               limits = as.Date(c(startDate,endDate)), expand = c(0.01, 0))+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(limits=c(-2.5,2.5),oob = rescale_none)
 
 
-# grid of plots
-plot2by2 <- plot_grid(p, climoPlot, tempPlot, precPlot,spi3plot,spi12plot,
+# grid of climate plots
+climPlots <- plot_grid(p, climoPlot, tempPlot, precPlot,
                       labels=NULL, ncol = 2)
 
-save_plot("plot2by2.png", plot2by2,
+save_plot("climPlots.png", climPlots,
           ncol = 2, # we're saving a grid plot of 2 columns
-          nrow = 3, # and 2 rows
+          nrow = 2, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
           base_aspect_ratio = 1.3
 )
 
+# grid of SPI plots
+spiPlots <- plot_grid(spi3plot, spi12plot, spei3plot, spei12plot,
+                       labels=NULL, ncol = 2)
 
+save_plot("spiPlots.png", spiPlots,
+          ncol = 2, # we're saving a grid plot of 2 columns
+          nrow = 2, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+          base_aspect_ratio = 1.3
+)
 
 
 
