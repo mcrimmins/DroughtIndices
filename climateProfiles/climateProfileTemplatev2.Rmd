@@ -1,0 +1,48 @@
+---
+title: "Climate Profile for Grant County, Nebraska"
+sansfont: Calibri Light
+output:
+  word_document: default
+  pdf_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r fig.width=8, fig.height=7,echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("climPlots.png")
+ grid.raster(img)
+```
+```{r fig.width=8, fig.height=3,echo=FALSE, fig.align="center"}
+img <- readPNG("USDMplot.png")
+ grid.raster(img)
+```
+\newpage
+
+# Drought Indices: 1995-2015
+
+```{r fig.width=8, fig.height=8,echo=FALSE}
+img <- readPNG("spiPlots.png")
+ grid.raster(img)
+```
+* SPI and SPEI calculated on 1915-2015 period of record. SPEI monthly water balance calculate using Hargreaves PET estimation. 
+
+\newpage
+
+# NDVI and Precipitation (1981-2015)
+
+```{r fig.width=7, fig.height=5,echo=FALSE}
+img <- readPNG("/home/crimmins/RProjects/LivnehDrought/vhi/seasFigs/SeasonalClim.png")
+ grid.raster(img)
+```
+
+```{r fig.width=7, fig.height=5,echo=FALSE}
+img <- readPNG("/home/crimmins/RProjects/LivnehDrought/vhi/seasFigs/ClimTS.png")
+ grid.raster(img)
+```
+
+******
+Data sources: Precipitation, Temperatures, and SPI from Livneh et al. 2013, NDVI from NOAA-STAR https://www.star.nesdis.noaa.gov/smcd/emb/vci/VH/vh_ftp.php
+
+
