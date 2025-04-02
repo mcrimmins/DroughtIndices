@@ -12,7 +12,7 @@ allWeeks<-list()
 l<-1
 
 # create full file list
-for (j in 1982:2018) {
+for (j in 1982:2019) {
   for (i in 1:52) {
     AllfileNames[l]<-paste0(j,str_pad(i, 3, pad = "0"))
     allYears[l]<-j

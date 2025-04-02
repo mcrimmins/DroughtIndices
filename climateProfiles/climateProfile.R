@@ -122,6 +122,8 @@ climoPlot<-ggplot() +
   )+
   labs(title="Avg Monthly Precip and Temp")
 
+
+
 # group to annual values
 # get monthly summary stats
 annualClimate<-monthlyClimate %>% group_by(year) %>% summarise(

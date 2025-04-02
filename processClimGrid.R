@@ -26,7 +26,7 @@ filelistExt<-filelistExt[-nrow(filelistExt), ]
 # remove duplicates
 filelistExt<-filelistExt[!rev(duplicated(rev(filelistExt$date))),]
 # thin file list to date range of interest
-filelistExt<-filelistExt[which(filelistExt$date<=as.Date("2017-12-1")),]
+filelistExt<-filelistExt[which(filelistExt$date<=as.Date("2019-12-1")),]
 
 # empty stack
 tempStack <- stack()
@@ -35,9 +35,12 @@ tempStack <- stack()
 # .prcp.conus.pnt; .tave.conus.pnt; .tmax.conus.pnt; .tmin.conus.pnt
 climVar=".prcp.conus.pnt"
 
+# which rows for update time period
+minRow<-min(which(filelistExt$year>=2018))
+
 # download precip file and format into data frame
 ptm <- proc.time()
-for(i in 1473:nrow(filelistExt)){
+for(i in minRow:nrow(filelistExt)){
   urlFile<-paste0(url,filelistExt$filenameLong[i])
   download.file(urlFile,"./temp/temp.tar.gz")
   tarList<-untar("./temp/temp.tar.gz", list=TRUE)
@@ -70,13 +73,19 @@ for(i in 1473:nrow(filelistExt)){
 }
 proc.time() - ptm
 # assign names to layers
-names(tempStack)<-filelistExt$date
+names(tempStack)<-filelistExt$date[minRow:nrow(filelistExt)]
 
 # crop exten to Western US
 e <- extent(-125, -97, 25, 49)
 tempStack <- crop(tempStack, e)	
 
-# write out 
+# open existing file to append to
+grid<-stack("/scratch/crimmins/climgrid/processed/WESTmonthly.prcp.conus.pnt_1895_2017.grd")
+# stack together
+grid<-stack(grid,tempStack)
+
+# write out new stack
 nameFile<-paste0("/scratch/crimmins/climgrid/processed/WESTmonthly",climVar,"_",min(filelistExt$year),"_",max(filelistExt$year),".grd")
-writeRaster(tempStack,filename=nameFile, overwrite=TRUE )
+#writeRaster(tempStack,filename=nameFile, overwrite=TRUE )
+writeRaster(grid,filename=nameFile, overwrite=TRUE )
 

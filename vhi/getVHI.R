@@ -44,12 +44,14 @@ ND<-raster("./vhi/nd.nc")
 plot(test)
 
 
+library(stringr)
+library(RCurl)
 fileNames<-list()
 l<-1
 
 # create sequence of filenames
-for (i in 10:40) {
-  for (j in 2016:2016) {
+for (i in 1:52) {
+  for (j in 2022:2022) {
     fileNames[l]<-paste0("VHP.G04.C07.npp.P",j,str_pad(i, 3, pad = "0"),".SM.SMN.tif")
     l<-l+1
   }
@@ -57,8 +59,9 @@ for (i in 10:40) {
 
 for (i in 1:length(fileNames)) {
   URL<-paste0("ftp://ftp.star.nesdis.noaa.gov/pub/corp/scsb/wguo/data/Blended_VH_4km/geo_TIFF/",fileNames[i])
-  download.file(URL, destfile = paste0('/scratch/crimmins/vhi/smNDVI/',fileNames[i]), method="curl")
+  download.file(URL, destfile = paste0('/scratch/crimmins/vhi/smNDVI/',fileNames[i]), method="auto")
   print(i)
+  #Sys.sleep(3)
 }
 
-
+download.file(URL, destfile = "temp.tif")

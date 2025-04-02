@@ -8,26 +8,39 @@ library(plyr)
 library(grid)
 library(cowplot)
 
+# set rasteroptions
+rasterOptions(progress = 'text')
+
+# for Range Drought project use SW_CRA extent
+#> extent(SW_CRA)
+#class      : Extent 
+#xmin       : -116.2267 
+#xmax       : -99.21573 
+#ymin       : 28.9193 
+#ymax       : 42.76954 
+# extent(-116.2267,-99.21573,28.9193,42.76954)
+
 # process with list of filenames
-#fileNames <- dir("/scratch/crimmins/vhi/smNDVI", "*.tif", full.names = TRUE)
-# fileNames <- dir("/scratch/crimmins/vhi/VHItiff", "*.tif", full.names = TRUE)
-# 
-# # read layers into stack
-# l<-1
-#   smNDVI <- stack()
-#   for (i in seq(1, length(fileNames), by=4)) {
-#     tempRast<-raster(fileNames[i])
-#     e <- extent(-125, -100, 25, 49)
-#     tempRast <- crop(tempRast, e)
-#     smNDVI <- stack(smNDVI, tempRast)
-#     print(names(tempRast))
-#     l<-l+1
-#   }
-# # fix values
-# smNDVI[smNDVI < 0] <- NA
-# 
-# # write Raster to file
-# writeRaster(smNDVI,filename='/scratch/crimmins/vhi/processed/VHI_1982-2018_WESTUS.grd', overwrite=TRUE)
+fileNames <- dir("/scratch/crimmins/vhi/smNDVI", "*.tif", full.names = TRUE)
+#fileNames <- dir("/scratch/crimmins/vhi/VHItiff", "*.tif", full.names = TRUE)
+
+# read layers into stack seq(1, length(fileNames), by=1)
+l<-1
+  smNDVI <- stack()
+  for (i in seq(1, length(fileNames), by=1)) {
+    tempRast<-raster(fileNames[i])
+    e <- extent(-116.2267,-99.21573,28.9193,42.76954) # WESTUS extent(-125, -100, 25, 49)
+    tempRast <- crop(tempRast, e)
+    tempRast[tempRast<0]<-NA
+    smNDVI <- stack(smNDVI, tempRast)
+    print(names(tempRast))
+    l<-l+1
+  }
+# fix values
+#smNDVI[smNDVI < 0] <- NA
+
+# write Raster to file
+writeRaster(smNDVI,filename='/scratch/crimmins/vhi/processed/smNDVI_1982-2019_SWUS.grd', overwrite=TRUE)
 
 # ---- EXTRACT time series  
 # things to try: mask out forest areas, evaluate min/max, stdev of vals in county, do compare 1/2/4 weeks per month

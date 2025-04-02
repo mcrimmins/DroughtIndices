@@ -29,6 +29,7 @@ spi12<-stack("/scratch/crimmins/livneh/processed/WESTmonthlyLivneh_SPI12_1915_20
 # PRISM
 #spi12<-stack("/scratch/crimmins/PRISM/monthly/processed/west/resampled/resampledWESTmonthlyPRISM_SPI12_1915_2015.grd")
 
+#writeRaster(spi12, "WESTmonthlyLivneh_SPI12_1915_2015.nc", overwrite=TRUE)
 
 
 # limit to last twenty years
